@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>仕様書</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({ startOnLoad: true });</script>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    padding: 20px;
+  }
+  h1, h2 {
+    color: #343a40;
+  }
+  section {
+    background-color: #ffffff;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  ul {
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+<h1>仕様書</h1>
+
+<section>
+  <h2>１．概要</h2>
+  <p>本システムは、Flaskを用いたシンプルな日記管理Webアプリケーションです。ユーザーは日付と内容を指定して日記を登録・取得できます。データはJSONファイルに保存されます。</p>
+</section>
+
+<section>
+  <h2>２．使用ライブラリ</h2>
+  <ul>
+    <li>Flask: Webフレームワーク</li>
+    <li>unittest: 単体テストフレームワーク</li>
+    <li>json: JSONデータの読み書き</li>
+    <li>datetime: 日付の検証・操作</li>
+  </ul>
+</section>
+
+<section>
+  <h2>３．処理の流れ</h2>
+  <ul>
+    <li>トップページ（/）にアクセスすると、index.htmlを表示する。</li>
+    <li>GET /api/diary で年・月パラメータを受け取り、該当月の日記データをJSON形式で返す。</li>
+    <li>POST /api/diary で日付と内容をJSONボディで受け取り、日記データを保存する。</li>
+    <li>日記データは diary.json ファイルにJSON形式で保存される。</li>
+    <li>単体テストは unittest を用いて、APIの正常系・異常系を検証する。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>４．フローチャート</h2>
+  <div class="mermaid">
+  flowchart TD
+    A[ユーザーアクセス] --> B{アクセス先}
+    B -->|トップページ| C[index.html表示]
+    B -->|GET /api/diary| D[年・月パラメータ受取]
+    D --> E{パラメータ有無}
+    E -->|無| F[400エラー返却]
+    E -->|有| G[diary.json読み込み]
+    G --> H[該当年月の日記抽出]
+    H --> I[JSONで返却]
+    B -->|POST /api/diary| J[JSONボディ受取]
+    J --> K{date, content有無}
+    K -->|無| L[400エラー返却]
+    K -->|有| M[日付フォーマット検証]
+    M --> N{検証結果}
+    N -->|不正| O[400エラー返却]
+    N -->|正常| P[diary.json読み込み]
+    P --> Q[日記データ更新]
+    Q --> R[diary.json保存]
+    R --> S[成功メッセージ返却]
+  </div>
+</section>
+
+<section>
+  <h2>５．シーケンス図</h2>
+  <div class="mermaid">
+  sequenceDiagram
+    participant User as ユーザー
+    participant Browser as ブラウザ
+    participant Server as Flaskサーバ
+    participant File as diary.jsonファイル
+
+    User->>Browser: URLアクセス
+    Browser->>Server: GET /
+    Server->>Browser: index.html返却
+
+    User->>Browser: GET /api/diary?year&month
+    Browser->>Server: APIリクエスト
+    Server->>File: diary.json読み込み
+    File-->>Server: 日記データ返却
+    Server->>Browser: JSON返却
+
+    User->>Browser: POST /api/diary
+    Browser->>Server: JSONボディ送信
+    Server->>Server: 日付検証
+    Server->>File: diary.json読み込み
+    Server->>File: 日記データ更新・保存
+    Server->>Browser: 成功メッセージ返却
+  </div>
+</section>
+
+</body>
+</html>

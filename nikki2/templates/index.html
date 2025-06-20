@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>日記アプリ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 0 10px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin-top: 10px;
+    }
+    .day-name, .date-cell {
+      padding: 8px;
+      border: 1px solid #ccc;
+      min-height: 80px;
+      box-sizing: border-box;
+      cursor: pointer;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+    .day-name {
+      background-color: #f0f0f0;
+      font-weight: bold;
+      text-align: center;
+      cursor: default;
+    }
+    .date-cell.inactive {
+      background-color: #f9f9f9;
+      color: #aaa;
+      cursor: default;
+    }
+    .date-cell.selected {
+      background-color: #d0eaff;
+      border-color: #3399ff;
+    }
+    .nav-buttons {
+      text-align: center;
+      margin-top: 10px;
+    }
+    .nav-buttons button {
+      margin: 0 10px;
+      padding: 6px 12px;
+      font-size: 16px;
+    }
+    #diary-editor {
+      margin-top: 20px;
+      display: none;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: #fefefe;
+    }
+    #diary-editor textarea {
+      width: 100%;
+      height: 120px;
+      font-size: 14px;
+      padding: 6px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+    #diary-editor button {
+      margin-top: 8px;
+      padding: 6px 12px;
+      font-size: 16px;
+    }
+    #selected-date {
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>日記アプリ</h1>
+  <div class="nav-buttons">
+    <button id="prev-month">前の月</button>
+    <span id="current-month-year"></span>
+    <button id="next-month">次の月</button>
+  </div>
+  <div class="calendar" id="calendar">
+    <!-- Day names -->
+    <div class="day-name">日</div>
+    <div class="day-name">月</div>
+    <div class="day-name">火</div>
+    <div class="day-name">水</div>
+    <div class="day-name">木</div>
+    <div class="day-name">金</div>
+    <div class="day-name">土</div>
+  </div>
+
+  <div id="diary-editor">
+    <div id="selected-date"></div>
+    <textarea id="diary-content" placeholder="ここに日記を入力してください"></textarea>
+    <br />
+    <button id="save-diary">保存</button>
+    <button id="close-editor">閉じる</button>
+  </div>
+
+  <script>
+    const calendarEl = document.getElementById('calendar');
+    const currentMonthYearEl = document.getElementById('current-month-year');
+    const prevMonthBtn = document.getElementById('prev-month');
+    const nextMonthBtn = document.getElementById('next-month');
+    const diaryEditor = document.getElementById('diary-editor');
+    const selectedDateEl = document.getElementById('selected-date');
+    const diaryContentEl = document.getElementById('diary-content');
+    const saveDiaryBtn = document.getElementById('save-diary');
+    const closeEditorBtn = document.getElementById('close-editor');
+
+    let currentYear, currentMonth;
+    let diaryData = {};
+    let selectedDate = null;
+
+    function padZero(num) {
+      return num < 10 ? '0' + num : num;
+    }
+
+    function formatDate(year, month, day) {
+      return year + '-' + padZero(month) + '-' + padZero(day);
+    }
+
+    function fetchDiary(year, month) {
+      fetch(`/api/diary?year=${year}&month=${month}`)
+        .then(res => res.json())
+        .then(data => {
+          diaryData = data;
+          renderCalendar(year, month);
+        })
+        .catch(err => {
+          console.error('日記データの取得に失敗しました', err);
+          diaryData = {};
+          renderCalendar(year, month);
+        });
+    }
+
+    function renderCalendar(year, month) {
+      currentMonthYearEl.textContent = year + '年 ' + month + '月';
+      // Remove old date cells
+      const oldCells = calendarEl.querySelectorAll('.date-cell');
+      oldCells.forEach(cell => cell.remove());
+
+      const firstDay = new Date(year, month - 1, 1);
+      const lastDay = new Date(year, month, 0);
+      const startDayOfWeek = firstDay.getDay();
+      const daysInMonth = lastDay.getDate();
+
+      // Previous month's days to fill grid if needed
+      const prevMonthLastDay = new Date(year, month - 1, 0).getDate();
+
+      // Total cells to show: 42 (6 weeks)
+      const totalCells = 42;
+
+      for (let i = 0; i < totalCells; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('date-cell');
+
+        let dayNumber = 0;
+        let cellDate = null;
+        if (i < startDayOfWeek) {
+          // Previous month days
+          dayNumber = prevMonthLastDay - (startDayOfWeek - 1 - i);
+          cell.classList.add('inactive');
+          cell.textContent = dayNumber;
+        } else if (i >= startDayOfWeek && i < startDayOfWeek + daysInMonth) {
+          // Current month days
+          dayNumber = i - startDayOfWeek + 1;
+          cellDate = formatDate(year, month, dayNumber);
+          cell.textContent = dayNumber;
+
+          // Show diary content if exists (first 20 chars)
+          if (diaryData[cellDate]) {
+            const diaryText = diaryData[cellDate];
+            const displayText = diaryText.length > 20 ? diaryText.slice(0, 20) + '...' : diaryText;
+            const diaryDiv = document.createElement('div');
+            diaryDiv.style.fontSize = '12px';
+            diaryDiv.style.marginTop = '4px';
+            diaryDiv.style.color = '#333';
+            diaryDiv.textContent = displayText;
+            cell.appendChild(diaryDiv);
+          }
+
+          cell.addEventListener('click', () => {
+            openDiaryEditor(cellDate);
+            highlightSelectedDate(cellDate);
+          });
+
+          if (selectedDate === cellDate) {
+            cell.classList.add('selected');
+          }
+        } else {
+          // Next month days
+          dayNumber = i - (startDayOfWeek + daysInMonth) + 1;
+          cell.classList.add('inactive');
+          cell.textContent = dayNumber;
+        }
+
+        calendarEl.appendChild(cell);
+      }
+    }
+
+    function openDiaryEditor(date) {
+      selectedDate = date;
+      selectedDateEl.textContent = date + ' の日記';
+      diaryContentEl.value = diaryData[date] || '';
+      diaryEditor.style.display = 'block';
+      diaryContentEl.focus();
+      renderCalendar(currentYear, currentMonth);
+    }
+
+    function closeDiaryEditor() {
+      diaryEditor.style.display = 'none';
+      selectedDate = null;
+      renderCalendar(currentYear, currentMonth);
+    }
+
+    function highlightSelectedDate(date) {
+      const cells = calendarEl.querySelectorAll('.date-cell');
+      cells.forEach(cell => {
+        cell.classList.remove('selected');
+        if (!cell.classList.contains('inactive') && cell.textContent) {
+          const day = parseInt(cell.textContent);
+          const cellDate = formatDate(currentYear, currentMonth, day);
+          if (cellDate === date) {
+            cell.classList.add('selected');
+          }
+        }
+      });
+    }
+
+    saveDiaryBtn.addEventListener('click', () => {
+      if (!selectedDate) return;
+      const content = diaryContentEl.value;
+      fetch('/api/diary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ date: selectedDate, content: content })
+      })
+        .then(res => res.json())
+        .then(data => {
+          diaryData[selectedDate] = content;
+          alert('日記を保存しました。');
+          closeDiaryEditor();
+        })
+        .catch(err => {
+          console.error('日記の保存に失敗しました', err);
+          alert('日記の保存に失敗しました。');
+        });
+    });
+
+    closeEditorBtn.addEventListener('click', () => {
+      closeDiaryEditor();
+    });
+
+    prevMonthBtn.addEventListener('click', () => {
+      if (currentMonth === 1) {
+        currentYear--;
+        currentMonth = 12;
+      } else {
+        currentMonth--;
+      }
+      selectedDate = null;
+      fetchDiary(currentYear, currentMonth);
+    });
+
+    nextMonthBtn.addEventListener('click', () => {
+      if (currentMonth === 12) {
+        currentYear++;
+        currentMonth = 1;
+      } else {
+        currentMonth++;
+      }
+      selectedDate = null;
+      fetchDiary(currentYear, currentMonth);
+    });
+
+    function init() {
+      const today = new Date();
+      currentYear = today.getFullYear();
+      currentMonth = today.getMonth() + 1;
+      fetchDiary(currentYear, currentMonth);
+    }
+
+    init();
+  </script>
+</body>
+</html>
