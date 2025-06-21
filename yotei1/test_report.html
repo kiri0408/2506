@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>Unitテスト成績書</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; padding: 10px; background: #f9f9f9; }
+  h1 { text-align: center; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+  th { background-color: #eee; }
+  tr.pass { background-color: #d4edda; }
+  tr.fail { background-color: #f8d7da; }
+</style>
+</head>
+<body>
+  <h1>Unitテスト成績書</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>テスト用関数名</th>
+        <th>関数の説明</th>
+        <th>テスト結果</th>
+        <th>実施日時</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="pass">
+        <td>test_get_schedules_missing_params</td>
+        <td>GET /api/schedulesでyearまたはmonthパラメータがない場合のエラーハンドリング</td>
+        <td>成功</td>
+        <td>2025-06-21 10:08:44</td>
+      </tr>
+      <tr class="pass">
+        <td>test_get_schedules_invalid_params</td>
+        <td>GET /api/schedulesで無効なmonthパラメータの場合のエラーハンドリング</td>
+        <td>成功</td>
+        <td>2025-06-21 10:08:44</td>
+      </tr>
+      <tr class="pass">
+        <td>test_post_schedule_invalid_json</td>
+        <td>POST /api/schedulesで不正なJSONデータの処理</td>
+        <td>成功</td>
+        <td>2025-06-21 10:08:44</td>
+      </tr>
+      <tr class="pass">
+        <td>test_post_schedule_missing_fields</td>
+        <td>POST /api/schedulesでdateまたはtextがない場合のエラーハンドリング</td>
+        <td>成功</td>
+        <td>2025-06-21 10:08:44</td>
+      </tr>
+      <tr class="pass">
+        <td>test_post_schedule_invalid_date</td>
+        <td>POST /api/schedulesで不正な日付フォーマットの処理</td>
+        <td>成功</td>
+        <td>2025-06-21 10:08:44</td>
+      </tr>
+      <tr class="pass">
+        <td>test_post_and_get_schedule</td>
+        <td>予定の登録と取得の正常動作確認</td>
+        <td>成功</td>
+        <td>2025-06-21 10:08:44</td>
+      </tr>
+      <tr class="pass">
+        <td>test_post_empty_text_removes_schedule</td>
+        <td>空文字の予定登録で既存予定が削除されることの確認</td>
+        <td>成功</td>
+        <td>2025-06-21 10:08:44</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>

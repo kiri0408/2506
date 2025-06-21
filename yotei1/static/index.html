@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>月間カレンダー予定管理アプリ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 10px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    #calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      background-color: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    .day-name {
+      font-weight: bold;
+      text-align: center;
+      padding: 8px 0;
+      background-color: #e0e0e0;
+      border-radius: 4px;
+    }
+    .date-cell {
+      min-height: 80px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 5px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+    .date-cell.inactive {
+      background-color: #f0f0f0;
+      color: #999;
+      cursor: default;
+    }
+    .date-number {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .schedule-text {
+      flex-grow: 1;
+      font-size: 0.9em;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      color: #333;
+    }
+    #month-nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 20px;
+    }
+    #month-nav button {
+      padding: 6px 12px;
+      font-size: 1em;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: white;
+      transition: background-color 0.2s ease;
+    }
+    #month-nav button:hover {
+      background-color: #eee;
+    }
+    #month-label {
+      font-weight: bold;
+      font-size: 1.2em;
+      min-width: 140px;
+      text-align: center;
+    }
+    /* Modal styles */
+    #modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    #modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 320px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+    }
+    #modal-content label {
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    #modal-content textarea {
+      resize: vertical;
+      min-height: 80px;
+      margin-bottom: 12px;
+      font-size: 1em;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: Arial, sans-serif;
+    }
+    #modal-content button {
+      padding: 8px 12px;
+      font-size: 1em;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: white;
+      transition: background-color 0.2s ease;
+    }
+    #modal-content button:hover {
+      background-color: #0056b3;
+    }
+    #modal-close {
+      background-color: #6c757d;
+      margin-top: 8px;
+    }
+    #modal-close:hover {
+      background-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+  <h1>月間カレンダー予定管理アプリ</h1>
+  <div id="month-nav">
+    <button id="prev-month" aria-label="前の月"><</button>
+    <div id="month-label" aria-live="polite"></div>
+    <button id="next-month" aria-label="次の月">></button>
+  </div>
+  <div id="calendar" role="grid" aria-label="カレンダー"></div>
+
+  <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div id="modal-content">
+      <h2 id="modal-title">予定編集</h2>
+      <label for="schedule-textarea">予定内容</label>
+      <textarea id="schedule-textarea" rows="4" placeholder="予定を入力してください"></textarea>
+      <button id="save-schedule">保存</button>
+      <button id="modal-close">キャンセル</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

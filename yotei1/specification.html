@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>カレンダー予定管理アプリ 仕様書</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; padding: 10px; background: #f9f9f9; }
+  h1, h2, h3 { text-align: center; }
+  section { margin-bottom: 40px; }
+  ul { line-height: 1.6; }
+  .mermaid { background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 0 8px rgba(0,0,0,0.1); margin: 20px auto; max-width: 900px; }
+</style>
+</head>
+<body>
+  <h1>カレンダー予定管理アプリ 仕様書</h1>
+
+  <section>
+    <h2>１．概要</h2>
+    <p>本アプリは月単位で切り替わるカレンダーを表示し、各日付ごとに予定を管理できるWEBアプリケーションです。ユーザはPCのWEBブラウザから利用し、日付をクリックして予定の編集・保存が可能です。予定データはサーバー側でJSON形式で保存されます。</p>
+  </section>
+
+  <section>
+    <h2>２．使用ライブラリ</h2>
+    <ul>
+      <li>Python 3.x</li>
+      <li>Flask - 軽量WEBフレームワーク</li>
+      <li>JavaScript (Vanilla) - フロントエンドの動的操作</li>
+      <li>Mermaid.js - フローチャート・シーケンス図描画用</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>３．処理の流れ</h2>
+    <ul>
+      <li>ユーザがWEBブラウザでアプリにアクセス</li>
+      <li>サーバーがindex.htmlと関連静的ファイルを返す</li>
+      <li>JavaScriptが現在の年月のカレンダーを描画</li>
+      <li>API経由で当該月の予定データをJSONで取得</li>
+      <li>カレンダーの日付セルに予定内容を表示</li>
+      <li>ユーザが日付をクリックするとモーダルで予定編集画面を表示</li>
+      <li>予定を入力し保存ボタンを押すとAPIにPOSTしサーバーに保存</li>
+      <li>保存成功後、カレンダーを再描画し最新の予定を反映</li>
+      <li>月の切り替えは前月・次月ボタンで行い、同様に予定を取得・表示</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>４．フローチャート</h2>
+    <div class="mermaid">
+      graph TD
+        A[ユーザがブラウザでアクセス] --> B[サーバーがindex.html返す]
+        B --> C[JavaScriptがカレンダー描画]
+        C --> D[APIで当月予定取得]
+        D --> E[カレンダーに予定表示]
+        E --> F{日付クリック?}
+        F -- はい --> G[モーダルで予定編集]
+        G --> H[予定をAPIにPOST]
+        H --> I[保存成功]
+        I --> C
+        F -- いいえ --> J[月切替ボタン押下?]
+        J -- はい --> K[年月更新し予定取得]
+        K --> C
+        J -- いいえ --> E
+    </div>
+  </section>
+
+  <section>
+    <h2>５．シーケンス図</h2>
+    <div class="mermaid">
+      sequenceDiagram
+        participant User as ユーザ
+        participant Browser as ブラウザ
+        participant Server as サーバー
+        User->>Browser: URLアクセス
+        Browser->>Server: GET / (index.html)
+        Server-->>Browser: index.html + 静的ファイル
+        Browser->>Browser: カレンダー描画
+        Browser->>Server: GET /api/schedules?year&month
+        Server-->>Browser: JSON予定データ
+        Browser->>Browser: 予定表示
+        User->>Browser: 日付クリック
+        Browser->>Browser: モーダル表示
+        User->>Browser: 予定入力・保存
+        Browser->>Server: POST /api/schedules
+        Server-->>Browser: 保存結果
+        Browser->>Browser: カレンダー再描画
+    </div>
+  </section>
+</body>
+</html>
